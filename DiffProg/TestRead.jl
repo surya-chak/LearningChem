@@ -17,3 +17,22 @@ headers=data[2]
 
 # count number of inputs
 
+
+for varCtr in 1:1:length(headers)
+    if headers[varCtr] == "X1"
+        XSt=varCtr;
+        break;
+    end
+end
+
+ctr=0;
+for varCtr in 1:1:length(headers)
+    if headers[varCtr+XSt-1] == string("X",varCtr)
+        ctr+=1;
+    else
+        break
+    end
+
+end
+
+USt=
