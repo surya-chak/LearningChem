@@ -1,8 +1,5 @@
 using DelimitedFiles
 
-
-
-
 function systIO(NSyst,NInst)
 
     # Reading from the publicData
@@ -39,6 +36,4 @@ function systIO(NSyst,NInst)
             break
         end
     end
-
-
 end
