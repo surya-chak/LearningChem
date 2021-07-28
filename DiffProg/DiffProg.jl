@@ -46,10 +46,10 @@ U=zeros(nU);
 # Defining the parameters of the system
 # =====================================
 
-Linear=zeros(nX,nX);
-Quadratic=zeros(nX,nX,nX);
+Linear=0.0001*rand(nX,nX);
+Quadratic=0.001*rand(nX,nX,nX);
 
-BMat=zeros(nX,nU);
+BMat=0.01*rand(nX,nU);
 
 # packing up the coefficients into parameters vector
 pLin=Linear[:];
@@ -66,26 +66,17 @@ p=[pLin;pQuad;pB];
 # RHS of the system
 function Syst_RHS!(dX,X,p,t)
     # Dismantling the parameters of the neural network
-
-    # println(len_pL)
-    # println(len_pQ)
-    # println(length(p))
-
     LTerm=reshape(p[1:len_pL],nX,nX);
     QTerm=reshape(p[len_pL+1:len_pQ+len_pL],nX,nX,nX);
     BTerm=reshape(p[len_pL+len_pQ+1:end],nX,nU);
 
-
     U=zeros(nU)
-
-    # println(U)
 
     if t<=TCtrlOn
         U=UVec;
     else
-        U=0.0;
+        U.=0.0;
     end
-    # println(U)
 
     for iState=1:1:nX
         dX[iState]=dot(LTerm[iState,:],X)+X'*(transpose(QTerm[iState,:,:])*X);
@@ -102,9 +93,7 @@ TSpan=(0.0,TFin);
 prob_nn = ODEProblem(Syst_RHS!, X0, TSpan, p);
 
 println("Solving with untrained params...")
-# sol = Array(solve(prob_nn,Tsit5()))
 sol = Array(solve(prob_nn, Tsit5(),saveat=TVec))
-
 # ================
 # Training set up
 # ================
@@ -116,7 +105,7 @@ end
 # Loss function
 function loss_adjoint()
     prediction = predict_adjoint()
-    loss = sum((prediction - traindata).^2); # L2 norm
+    loss = sum((prediction - XDat').^2); # L2 norm
     return loss
 end
 
@@ -126,8 +115,8 @@ params=Flux.params(p)
 
 losshistory = []
 cb = function () #callback function to observe training
-  display(loss_adjoint())
-  push!(losshistory,loss_adjoint());
+    push!(losshistory,loss_adjoint());
+    display(loss_adjoint());
 end
 
 # Display the ODE with the initial parameter values.
@@ -135,6 +124,4 @@ cb()
 @info "Start training"
 Flux.train!(loss_adjoint, params, Iterators.repeated((), 100), opt, cb = cb)
 @info "Finished Training"
-
-
 
