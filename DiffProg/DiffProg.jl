@@ -46,7 +46,7 @@ YVecLong=Float64.(data[4]);
 TargetVecLong=Float64.(data[5]);
 
 
-iShort=9;
+iShort=4;
 XDat=XDatLong[1:iShort,:];
 UDat=UDatLong[1:iShort,:];
 TVec=TVecLong[1:iShort,:];
@@ -61,6 +61,7 @@ nn=size(TVec,1);
 TFin=TVec[end];
 
 # finding out the control time till which control is applied
+NUon=nn;
 for nT in 1:1:nn
     if UDat[nT,1]==0.0
         global NUon=nT-1;
@@ -76,9 +77,9 @@ U=zeros(nU);
 # =====================================
 
 Linear=0.01*rand(nX,nX);
-Quadratic=0.001*rand(nX,nX,nX);
+Quadratic=0.0001*rand(nX,nX,nX);
 
-BMat=0.01*rand(nX,nU);
+BMat=0.001*rand(nX,nU);
 
 # packing up the coefficients into parameters vector
 pLin=Linear[:];
