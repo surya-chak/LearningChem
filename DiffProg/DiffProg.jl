@@ -19,11 +19,21 @@ NInst=1;
 data=systIO(NSyst,NInst)
 
 # unpacking the data read in 
-XDat=Float64.(data[1]);
-UDat=Float64.(data[2]);
-TVec=Float64.(data[3]);
-YVec=Float64.(data[4]);
-TargetVec=Float64.(data[5]);
+XDatLong=Float64.(data[1]);
+UDatLong=Float64.(data[2]);
+TVecLong=Float64.(data[3]);
+YVecLong=Float64.(data[4]);
+TargetVecLong=Float64.(data[5]);
+
+
+iShort=9;
+XDat=XDatLong[1:iShort,:];
+UDat=UDatLong[1:iShort,:];
+TVec=TVecLong[1:iShort,:];
+YVec=YVecLong[1:iShort,:];
+TargetVec=TargetVecLong[1:iShort,:];
+
+TVec=TVecLong[1:iShort];
 
 nX=size(XDat,2);
 nU=size(UDat,2);
@@ -37,7 +47,6 @@ for nT in 1:1:nn
         break;
     end
 end
-
 TCtrlOn=TVec[NUon]
 UVec=Float64.(UDat[1,:]);
 U=zeros(nU);
@@ -77,11 +86,11 @@ function Syst_RHS!(dX,X,p,t)
     else
         U.=0.0;
     end
-
     for iState=1:1:nX
         dX[iState]=dot(LTerm[iState,:],X)+X'*(transpose(QTerm[iState,:,:])*X);
         dX[iState]=dX[iState]+dot(BTerm[iState,:],U); # Adding the control
     end
+    
 end
 
 # ==================
@@ -93,13 +102,13 @@ TSpan=(0.0,TFin);
 prob_nn = ODEProblem(Syst_RHS!, X0, TSpan, p);
 
 println("Solving with untrained params...")
-sol = Array(solve(prob_nn, Tsit5(),saveat=TVec))
+sol = Array(solve(prob_nn, Tsit5(),saveat=TVec,reltol=1e-2))
 # ================
 # Training set up
 # ================
 # Forward pass function
 function predict_adjoint() # Trainable layer
-    Array(solve(prob_nn, Tsit5(), saveat=TVec, reltol=1e-4))
+    Array(solve(prob_nn, Tsit5(), saveat=TVec, reltol=1e-2))
 end
 
 # Loss function
