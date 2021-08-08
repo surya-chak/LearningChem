@@ -1,11 +1,31 @@
-using DiffEqFlux
-using DiffEqSensitivity
-using LinearAlgebra
+# using DiffEqFlux
+# using DiffEqSensitivity
+# using LinearAlgebra
+# using Flux
+
+# # using OrdinaryDiffEq
+# using DifferentialEquations
+# using Optim
+# using Zygote
+# using PyCall
+# using PyPlot
+
 using Flux
-using OrdinaryDiffEq
+using DiffEqFlux
+using DifferentialEquations
+using Optim
+using DiffEqSensitivity
 using Zygote
+
 using PyCall
 using PyPlot
+using DelimitedFiles
+using LinearAlgebra
+using DataInterpolations
+using Dierckx
+using JLD2
+using FileIO
+
 
 include("IOUtils.jl")
 
@@ -18,7 +38,7 @@ NInst=1;
 # reading in the data
 data=systIO(NSyst,NInst)
 
-# unpacking the data read in 
+# unnpacking the data read in 
 XDatLong=Float64.(data[1]);
 UDatLong=Float64.(data[2]);
 TVecLong=Float64.(data[3]);
@@ -55,7 +75,7 @@ U=zeros(nU);
 # Defining the parameters of the system
 # =====================================
 
-Linear=0.0001*rand(nX,nX);
+Linear=0.01*rand(nX,nX);
 Quadratic=0.001*rand(nX,nX,nX);
 
 BMat=0.01*rand(nX,nU);
@@ -90,7 +110,6 @@ function Syst_RHS!(dX,X,p,t)
         dX[iState]=dot(LTerm[iState,:],X)+X'*(transpose(QTerm[iState,:,:])*X);
         dX[iState]=dX[iState]+dot(BTerm[iState,:],U); # Adding the control
     end
-    
 end
 
 # ==================
@@ -134,3 +153,4 @@ cb()
 Flux.train!(loss_adjoint, params, Iterators.repeated((), 100), opt, cb = cb)
 @info "Finished Training"
 
+ 
